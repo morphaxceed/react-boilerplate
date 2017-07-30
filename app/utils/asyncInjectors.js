@@ -38,9 +38,28 @@ export function injectAsyncReducer(store, isValid) {
       '(app/utils...) injectAsyncReducer: Expected `asyncReducer` to be a reducer function'
     );
 
-    if (Reflect.has(store.asyncReducers, name)) return;
+    // if (Reflect.has(store.asyncReducers, name)) return;
 
+    // store.asyncReducers[name] = asyncReducer; // eslint-disable-line no-param-reassign
+
+    // Try 1
+    // This approach gets selectors to be executed with an 'undefined' state.
+
+    // Object.keys(store.asyncReducers).forEach(function(key) { delete store.asyncReducers[key]; });
+    // store.asyncReducers[name] = asyncReducer; // eslint-disable-line no-param-reassign
+
+    // store.asyncReducers = {
+    //   [name]: asyncReducer
+    // }
+
+    // Try 2 (also disabling the above `Reflect.has()` call)
+    // This approach gets 'webpack:///./~/redux-immutable/dist/combineReducers.js?:39' (that is 'reducerKeys.forEach(function (reducerName) {...}' handler) to get 'currentDomainState' as 'undefined', thus making the disabled version (below handler) return an 'undefined'.
+
+    // Disabled all reducers we know so far
+    Object.keys(store.asyncReducers).forEach(function(key) { store.asyncReducers[key] = (state) => state });
+    // Enable on the reducer we've just got
     store.asyncReducers[name] = asyncReducer; // eslint-disable-line no-param-reassign
+
     store.replaceReducer(createReducer(store.asyncReducers));
   };
 }
